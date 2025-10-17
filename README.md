@@ -1,6 +1,6 @@
 # Omarchy
 
-Personal configuration management system for Coltin Leekley's computing environment.
+Personal configuration management system for computing environment.
 
 ## What's Here
 - **Desktop configs** (3-monitor development setup)
