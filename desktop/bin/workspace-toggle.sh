@@ -49,13 +49,17 @@ if [[ -n "$ACTIVE_WINDOW" ]]; then
     hyprctl dispatch movetoworkspace "$TARGET_START,address:$ACTIVE_WINDOW"
 fi
 
-# Loop through each monitor and switch its workspace
+# Loop through each monitor and forcefully bind workspaces
 for i in "${!MONITORS[@]}"; do
     MONITOR="${MONITORS[$i]}"
     TARGET_WS=$((TARGET_START + i))
     
-    echo "Switching $MONITOR to workspace $TARGET_WS"
+    echo "Binding workspace $TARGET_WS to $MONITOR"
+    # Move workspace to monitor (creates if doesn't exist)
+    hyprctl dispatch moveworkspacetomonitor "$TARGET_WS" "$MONITOR"
+    # Focus the monitor
     hyprctl dispatch focusmonitor "$MONITOR"
+    # Switch to the workspace
     hyprctl dispatch workspace "$TARGET_WS"
 done
 
