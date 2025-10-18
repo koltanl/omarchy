@@ -1,6 +1,9 @@
 #!/bin/bash
 # Workspace Toggle Script with State Tracking
 # Toggles between Set A (1,2,3...) and Set B (4,5,6...) across all monitors
+# Usage: workspace-toggle.sh [move-window]
+#   - No args: Just toggle workspaces
+#   - 'move-window': Move active window along with workspace transition
 
 # State file to track current workspace set
 STATE_FILE="/tmp/workspace-toggle-state"
@@ -26,6 +29,24 @@ else
     echo "Switching to Set A: workspaces 1,2,3..."
     TARGET_START=1
     NEW_STATE="A"
+fi
+
+# Get active window info if we need to move it
+ACTIVE_WINDOW=""
+if [[ "$1" == "move-window" ]]; then
+    ACTIVE_WINDOW=$(hyprctl activewindow -j | jq -r '.address')
+    if [[ -n "$ACTIVE_WINDOW" && "$ACTIVE_WINDOW" != "null" && "$ACTIVE_WINDOW" != "0x0" ]]; then
+        echo "Moving active window $ACTIVE_WINDOW with workspace transition"
+    else
+        echo "No active window to move"
+        ACTIVE_WINDOW=""
+    fi
+fi
+
+# If we have an active window to move, move it first to the target workspace
+if [[ -n "$ACTIVE_WINDOW" ]]; then
+    echo "Moving window $ACTIVE_WINDOW to workspace $TARGET_START"
+    hyprctl dispatch movetoworkspace "$TARGET_START,address:$ACTIVE_WINDOW"
 fi
 
 # Loop through each monitor and switch its workspace

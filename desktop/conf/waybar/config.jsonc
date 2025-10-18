@@ -18,7 +18,7 @@
     "format": "{}",
     "exec": "/home/owner/bin/workspace-state.sh",
     "on-click": "/home/owner/bin/workspace-toggle.sh",
-    "tooltip-format": "Click to toggle workspace sets\n\nSuper + Tab",
+    "tooltip-format": "Click to toggle workspace sets\n\nSuper + Tab - Toggle workspaces\nCtrl + Super + Tab - Move window with toggle",
     "interval": 1
   },
   "custom/omarchy": {
