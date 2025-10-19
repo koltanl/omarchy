@@ -4,15 +4,20 @@
   "position": "top",
   "spacing": 0,
   "height": 26,
-  "modules-left": ["custom/omarchy", "custom/workspace-toggle"],
-  "modules-center": ["clock", "custom/update", "custom/screenrecording-indicator"],
+  "modules-left": ["custom/omarchy", "custom/workspace-toggle", "hyprland/window"],
+  "modules-center": ["clock", "custom/update", "custom/screenrecording-indicator", "custom/weather"],
   "modules-right": [
     "group/tray-expander",
     "bluetooth",
     "network",
     "pulseaudio",
     "cpu",
-    "battery"
+    "memory",
+    "disk",
+    "temperature",
+    "gpu",
+    "battery",
+    "custom/suspend"
   ],
   "custom/workspace-toggle": {
     "format": "{}",
@@ -117,5 +122,44 @@
   "tray": {
     "icon-size": 12,
     "spacing": 12
+  },
+  "hyprland/window": {
+    "format": "{}",
+    "separate-outputs": true
+  },
+  "custom/weather": {
+    "format": "{icon} {temp}°C",
+    "exec": "curl -s 'wttr.in?format=%c+%t'",
+    "interval": 300,
+    "tooltip-format": "Weather: {tooltip}"
+  },
+  "memory": {
+    "format": "{percentage}% {icon}",
+    "format-icons": ["󰍛", "󰍛", "󰍛", "󰍛", "󰍛"],
+    "interval": 5,
+    "on-click": "$TERMINAL -e btop"
+  },
+  "disk": {
+    "format": "{percentage_used}%",
+    "path": "/",
+    "interval": 30,
+    "on-click": "$TERMINAL -e btop"
+  },
+  "temperature": {
+    "format": "{temperatureC}°C {icon}",
+    "format-icons": ["󰤈", "󰤉", "󰤊", "󰤋", "󰤌"],
+    "critical-threshold": 80,
+    "interval": 5,
+    "on-click": "$TERMINAL -e btop"
+  },
+  "gpu": {
+    "format": "{utilization}%",
+    "interval": 5,
+    "on-click": "$TERMINAL -e btop"
+  },
+  "custom/suspend": {
+    "format": "󰒲",
+    "on-click": "systemctl suspend",
+    "tooltip-format": "Suspend system"
   }
 }
