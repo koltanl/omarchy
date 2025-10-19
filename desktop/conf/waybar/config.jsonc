@@ -37,7 +37,7 @@
 
   "cpu": {
     "interval": 5,
-    "format": "",
+    "format": "{usage}%",
     "on-click": "$TERMINAL -e btop"
   },
   "clock": {
@@ -47,11 +47,11 @@
     "on-click-right": "omarchy-cmd-tzupdate"
   },
   "network": {
-    "format-icons": ["", "", "", "", ""],
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
     "format": "{icon}",
     "format-wifi": "{icon}",
-    "format-ethernet": "",
-    "format-disconnected": "",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰤭",
     "tooltip-format-wifi": "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
     "tooltip-format-disconnected": "Disconnected",
@@ -63,12 +63,12 @@
     "format": "{capacity}% {icon}",
     "format-discharging": "{icon}",
     "format-charging": "{icon}",
-    "format-plugged": "",
+    "format-plugged": "󰂄",
     "format-icons": {
-      "charging": ["", "", "", "", "", "", "", "", "", ""],
-      "default": ["", "", "", "", "", "", "", "", "", ""]
+      "charging": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+      "default": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
-    "format-full": "",
+    "format-full": "󰁹",
     "tooltip-format-discharging": "{power:>1.0f}W↓ {capacity}%",
     "tooltip-format-charging": "{power:>1.0f}W↑ {capacity}%",
     "interval": 5,
@@ -79,9 +79,9 @@
     }
   },
   "bluetooth": {
-    "format": "",
-    "format-disabled": "",
-    "format-connected": "",
+    "format": "󰂯",
+    "format-disabled": "󰂲",
+    "format-connected": "󰂱",
     "tooltip-format": "Devices connected: {num_connections}",
     "on-click": "blueberry"
   },
@@ -91,9 +91,9 @@
     "on-click-right": "pamixer -t",
     "tooltip-format": "Playing at {volume}%",
     "scroll-step": 5,
-    "format-muted": "",
+    "format-muted": "󰝟",
     "format-icons": {
-      "default": ["", "", ""]
+      "default": ["󰕿", "󰖀", "󰕾"]
     }
   },
   "group/tray-expander": {
