@@ -12,7 +12,7 @@
     "network",
     "pulseaudio",
     "cpu",
-    "temperature",    
+    "custom/cpu-temp",    
     "custom/gpu-usage",
     "custom/gpu-temp",
     "memory",
@@ -128,12 +128,11 @@
     "tooltip-format": "{used} out of {total} used ({percentage_used}%)",
     "on-click": "$TERMINAL -e btop"
   },
-  "temperature": {
-    "format": "{temperatureC}°C",
-    "format-icons": ["󰤈", "󰤉", "󰤊", "󰤋", "󰤌"],
-    "critical-threshold": 80,
+  "custom/cpu-temp": {
+    "format": "{}°C",
+    "exec": "sensors k10temp-pci-00c3 | grep Tctl | awk '{print $2}' | sed 's/+//' | sed 's/°C//'",
     "interval": 5,
-    "tooltip-format": "CPU Temperature: {temperatureC}°C\nCritical threshold: 80°C",
+    "tooltip-format": "CPU Temperature: {}°C\nAMD Ryzen 5 5600X",
     "on-click": "$TERMINAL -e btop"
   },
   "custom/gpu-usage": {
