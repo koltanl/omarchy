@@ -1,0 +1,1 @@
+hyprland hypridle hyprlock hyprsunset kitty jq tmux chafa timg viu poppler-utils mupdf-tools btop lm_sensors pamixer blueberry nautilus chromium
