@@ -35,15 +35,13 @@
 #memory,
 #disk,
 #temperature,
-#gpu,
-#battery,
+#custom-gpu,
 #network,
 #bluetooth,
 #pulseaudio,
 #custom-omarchy,
 #custom-screenrecording-indicator,
 #custom-update,
-#custom-weather,
 #custom-suspend {
   min-width: 12px;
   margin: 0 7.5px;
@@ -81,11 +79,4 @@ tooltip {
 
 #hyprland-window {
   margin-left: 8px;
-  max-width: 200px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-#custom-weather {
-  font-size: 11px;
 }
