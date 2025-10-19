@@ -131,10 +131,10 @@
     "on-click": "$TERMINAL -e btop"
   },
   "custom/gpu": {
-    "format": "󰢮 {}%",
-    "exec": "cat /sys/class/drm/card1/device/gpu_busy_percent 2>/dev/null || echo '0'",
+    "format": "󰢮 {}% {}°C",
+    "exec": "echo \"$(cat /sys/class/drm/card1/device/gpu_busy_percent 2>/dev/null || echo '0') $(($(cat /sys/class/drm/card1/device/hwmon/hwmon1/temp2_input 2>/dev/null || echo '0') / 1000))\"",
     "interval": 2,
-    "tooltip-format": "GPU Usage: {}%\nAMD Graphics Card",
+    "tooltip-format": "GPU Usage: {}%\nGPU Junction Temp: {}°C\nAMD Graphics Card",
     "on-click": "$TERMINAL -e btop"
   },
   "custom/suspend": {
