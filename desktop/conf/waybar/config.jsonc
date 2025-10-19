@@ -12,11 +12,11 @@
     "network",
     "pulseaudio",
     "cpu",
-    "memory",
-    "disk",
-    "temperature",
+    "temperature",    
     "custom/gpu-usage",
     "custom/gpu-temp",
+    "memory",
+    "disk",
     "custom/suspend"
   ],
   "custom/workspace-toggle": {
