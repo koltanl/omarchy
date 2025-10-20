@@ -60,6 +60,39 @@ check_sudo() {
     fi
 }
 
+# Function to set default shell
+set_default_shell() {
+    log_info "Setting default shell to zsh..."
+    
+    # Check if zsh is installed
+    if ! command -v zsh &> /dev/null; then
+        log_error "zsh is not installed but is required"
+        exit 1
+    fi
+    
+    # Get zsh path
+    local zsh_path=$(command -v zsh)
+    log_info "Found zsh at: $zsh_path"
+    
+    # Check current shell
+    local current_shell=$(getent passwd "$USER" | cut -d: -f7)
+    log_info "Current shell: $current_shell"
+    
+    if [[ "$current_shell" == "$zsh_path" ]]; then
+        log_success "Default shell is already set to zsh"
+        return 0
+    fi
+    
+    # Change shell using chsh
+    if sudo chsh -s "$zsh_path" "$USER"; then
+        log_success "Default shell changed to zsh"
+        log_warning "Shell change will take effect on next login"
+    else
+        log_error "Failed to change default shell to zsh"
+        exit 1
+    fi
+}
+
 # Function to install dependencies
 install_dependencies() {
     log_info "Installing TV dependencies..."
@@ -168,6 +201,25 @@ deploy_scripts() {
     done
 }
 
+# Function to deploy dotfiles
+deploy_dotfiles() {
+    log_info "Deploying dotfiles..."
+    
+    for dotfile in "$TV_ROOT/dot"/.*; do
+        if [[ -f "$dotfile" ]]; then
+            local filename=$(basename "$dotfile")
+            local target="$HOME/$filename"
+            backup_file "$target"
+            if cp "$dotfile" "$target"; then
+                log_success "Deployed dotfile: $filename"
+            else
+                log_error "Failed to deploy dotfile: $filename"
+                exit 1
+            fi
+        fi
+    done
+}
+
 # Function to verify deployment
 verify_deployment() {
     log_info "Verifying TV deployment..."
@@ -223,6 +275,18 @@ verify_deployment() {
         fi
     done
     
+    # Check dotfiles
+    for dotfile in "$TV_ROOT/dot"/.*; do
+        if [[ -f "$dotfile" ]]; then
+            local filename=$(basename "$dotfile")
+            local target="$HOME/$filename"
+            if [[ ! -f "$target" ]]; then
+                log_error "Missing dotfile: $filename"
+                ((errors++))
+            fi
+        fi
+    done
+    
     if [[ $errors -eq 0 ]]; then
         log_success "TV deployment verification passed - all files deployed correctly"
         return 0
@@ -248,10 +312,12 @@ Options:
 
 This script:
 1. Installs all required packages from dependancies.txt
-2. Deploys Hyprland and Kitty configurations for TV setup
-3. Deploys all scripts to ~/bin/
-4. Creates .backup files for any existing configurations
-5. Verifies all files were deployed correctly
+2. Sets default shell to zsh
+3. Deploys Hyprland and Kitty configurations for TV setup
+4. Deploys all scripts to ~/bin/
+5. Deploys all dotfiles to ~/
+6. Creates .backup files for any existing configurations
+7. Verifies all files were deployed correctly
 
 TV-specific features:
 - Single monitor setup with scaling
@@ -322,6 +388,8 @@ main() {
             log_info "Skipping dependency installation"
         fi
         
+        set_default_shell
+        
         if [[ "$skip_configs" == "false" ]]; then
             deploy_configs
         else
@@ -333,6 +401,8 @@ main() {
         else
             log_info "Skipping script deployment"
         fi
+        
+        deploy_dotfiles
         
         verify_deployment
     fi

@@ -1,1 +1,1 @@
-hyprland hypridle hyprlock hyprsunset kitty waybar jq grim slurp satty wl-clipboard btop lm_sensors pamixer blueberry nautilus chromium
+hyprland hypridle hyprlock hyprsunset kitty waybar jq grim slurp satty wl-clipboard btop lm_sensors pamixer blueberry nautilus chromium zsh
