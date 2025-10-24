@@ -145,3 +145,4 @@ if [[ -x "$(command -v systemctl)" ]]; then
 	alias service.enable='sudo systemctl enable'
 	alias service.disable='sudo systemctl disable'
 fi
+alias git-check="check_authorship"
