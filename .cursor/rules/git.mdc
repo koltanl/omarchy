@@ -10,15 +10,15 @@ This is the **Omarchy** repository - your hot personal development stash. This i
 ## Git Configuration
 
 ### Remote Configuration
-- **Remote URL**: `git@github-personal.com:koltanl/omarchy.git`
-- **Account**: koltanl (personal GitHub account)
-- **SSH Key**: Uses `~/.ssh/id_ed25519` via `github-personal.com` host alias
+- **Remote URL**: `[REDACTED]`
+- **Account**: [REDACTED]
+- **SSH Key**: Uses `[REDACTED]` via `github-personal.com` host alias
 - **Branch Strategy**: Direct to `main` branch (no feature branches)
 
 ### User Configuration
 ```
-user.name=Coltin Leekley
-user.email=coltinleekley@gmail.com
+user.name=[REDACTED]
+user.email=[REDACTED]
 ```
 
 ## Development Workflow
@@ -173,7 +173,3 @@ This is your personal development playground for the Omarchy project. It's desig
 **Remember**: This is YOUR space. Break things, fix them, commit often, and keep moving forward. The goal is progress, not perfection.
 
 ---
-
-*Last updated: $(date)*
-*Repository: koltanl/omarchy*
-*SSH Key: ~/.ssh/id_ed25519*
