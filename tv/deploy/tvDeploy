@@ -130,6 +130,20 @@ backup_file() {
     fi
 }
 
+# Function to backup existing file with sudo (for system files)
+backup_file_sudo() {
+    local target_file="$1"
+    
+    if sudo test -f "$target_file"; then
+        local backup_file="${target_file}.backup"
+        if sudo cp "$target_file" "$backup_file"; then
+            log_info "Backed up existing file: $target_file -> $backup_file"
+        else
+            log_warning "Failed to backup: $target_file"
+        fi
+    fi
+}
+
 # Function to deploy configuration files
 deploy_configs() {
     log_info "Deploying TV configuration files..."
@@ -220,6 +234,65 @@ deploy_dotfiles() {
     done
 }
 
+# Function to deploy systemd services
+deploy_systemd() {
+    log_info "Deploying systemd services..."
+    
+    local systemd_dir="$TV_ROOT/conf/systemd"
+    
+    # Check if systemd directory exists and has files
+    if [[ ! -d "$systemd_dir" ]]; then
+        log_info "No systemd directory found, skipping systemd deployment"
+        return 0
+    fi
+    
+    local service_count=0
+    for service_file in "$systemd_dir"/*.service; do
+        if [[ -f "$service_file" ]]; then
+            ((service_count++))
+        fi
+    done
+    
+    if [[ $service_count -eq 0 ]]; then
+        log_info "No systemd service files found, skipping systemd deployment"
+        return 0
+    fi
+    
+    local systemd_target_dir="/etc/systemd/system"
+    
+    # Ensure target directory exists
+    if ! sudo mkdir -p "$systemd_target_dir"; then
+        log_error "Failed to create systemd directory: $systemd_target_dir"
+        exit 1
+    fi
+    
+    # Deploy each service file
+    for service_file in "$systemd_dir"/*.service; do
+        if [[ -f "$service_file" ]]; then
+            local filename=$(basename "$service_file")
+            local target="$systemd_target_dir/$filename"
+            
+            backup_file_sudo "$target"
+            
+            if sudo cp "$service_file" "$target"; then
+                # Set proper permissions
+                sudo chmod 644 "$target"
+                log_success "Deployed systemd service: $filename"
+                
+                # Reload systemd daemon to recognize new service
+                if sudo systemctl daemon-reload; then
+                    log_info "Reloaded systemd daemon"
+                else
+                    log_warning "Failed to reload systemd daemon"
+                fi
+            else
+                log_error "Failed to deploy systemd service: $filename"
+                exit 1
+            fi
+        fi
+    done
+}
+
 # Function to verify deployment
 verify_deployment() {
     log_info "Verifying TV deployment..."
@@ -287,6 +360,21 @@ verify_deployment() {
         fi
     done
     
+    # Check systemd services
+    local systemd_dir="$TV_ROOT/conf/systemd"
+    if [[ -d "$systemd_dir" ]]; then
+        for service_file in "$systemd_dir"/*.service; do
+            if [[ -f "$service_file" ]]; then
+                local filename=$(basename "$service_file")
+                local target="/etc/systemd/system/$filename"
+                if ! sudo test -f "$target"; then
+                    log_error "Missing systemd service: $filename"
+                    ((errors++))
+                fi
+            fi
+        done
+    fi
+    
     if [[ $errors -eq 0 ]]; then
         log_success "TV deployment verification passed - all files deployed correctly"
         return 0
@@ -308,6 +396,7 @@ Options:
     --skip-deps      Skip dependency installation
     --skip-configs   Skip configuration deployment
     --skip-scripts   Skip script deployment
+    --skip-systemd   Skip systemd service deployment
     --verify-only    Only verify existing deployment
 
 This script:
@@ -316,8 +405,9 @@ This script:
 3. Deploys Hyprland and Kitty configurations for TV setup
 4. Deploys all scripts to ~/bin/
 5. Deploys all dotfiles to ~/
-6. Creates .backup files for any existing configurations
-7. Verifies all files were deployed correctly
+6. Deploys all systemd services to /etc/systemd/system/
+7. Creates .backup files for any existing configurations
+8. Verifies all files were deployed correctly
 
 TV-specific features:
 - Single monitor setup with scaling
@@ -334,6 +424,7 @@ main() {
     local skip_deps=false
     local skip_configs=false
     local skip_scripts=false
+    local skip_systemd=false
     local verify_only=false
     
     # Parse command line arguments
@@ -353,6 +444,10 @@ main() {
                 ;;
             --skip-scripts)
                 skip_scripts=true
+                shift
+                ;;
+            --skip-systemd)
+                skip_systemd=true
                 shift
                 ;;
             --verify-only)
@@ -403,6 +498,12 @@ main() {
         fi
         
         deploy_dotfiles
+        
+        if [[ "$skip_systemd" == "false" ]]; then
+            deploy_systemd
+        else
+            log_info "Skipping systemd service deployment"
+        fi
         
         verify_deployment
     fi
