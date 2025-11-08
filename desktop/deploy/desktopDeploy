@@ -11,6 +11,7 @@ set -euo pipefail  # Exit on error, undefined vars, pipe failures
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DESKTOP_ROOT="$REPO_ROOT/desktop"
+DOT_ROOT="$REPO_ROOT/dot"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="/tmp/desktop-deploy-${TIMESTAMP}.log"
 
@@ -130,6 +131,20 @@ backup_file() {
     fi
 }
 
+# Function to backup existing file with sudo (for system files)
+backup_file_sudo() {
+    local target_file="$1"
+    
+    if sudo test -f "$target_file"; then
+        local backup_file="${target_file}.backup"
+        if sudo cp "$target_file" "$backup_file"; then
+            log_info "Backed up existing file: $target_file -> $backup_file"
+        else
+            log_warning "Failed to backup: $target_file"
+        fi
+    fi
+}
+
 # Function to deploy configuration files
 deploy_configs() {
     log_info "Deploying configuration files..."
@@ -223,8 +238,13 @@ deploy_scripts() {
 # Function to deploy dotfiles
 deploy_dotfiles() {
     log_info "Deploying dotfiles..."
-    
-    for dotfile in "$DESKTOP_ROOT/dot"/.*; do
+
+    if [[ ! -d "$DOT_ROOT" ]]; then
+        log_error "Dotfiles directory not found: $DOT_ROOT"
+        exit 1
+    fi
+
+    for dotfile in "$DOT_ROOT"/.*; do
         if [[ -f "$dotfile" ]]; then
             local filename=$(basename "$dotfile")
             local target="$HOME/$filename"
@@ -237,6 +257,43 @@ deploy_dotfiles() {
             fi
         fi
     done
+}
+
+# Function to ensure systemd-resolved is enabled and managing resolv.conf
+ensure_systemd_resolved() {
+    log_info "Ensuring systemd-resolved.service is enabled and running..."
+    
+    if sudo systemctl enable --now systemd-resolved.service; then
+        log_success "systemd-resolved.service enabled and started"
+    else
+        log_error "Failed to enable systemd-resolved.service"
+        exit 1
+    fi
+    
+    local resolv_conf="/etc/resolv.conf"
+    if ! sudo test -L "$resolv_conf"; then
+        log_info "Reconfiguring $resolv_conf to use systemd-resolved stub"
+        backup_file_sudo "$resolv_conf"
+        if sudo rm -f "$resolv_conf"; then
+            if sudo ln -sf /run/systemd/resolve/stub-resolv.conf "$resolv_conf"; then
+                log_success "Linked $resolv_conf to systemd-resolved stub"
+            else
+                log_error "Failed to link $resolv_conf to systemd-resolved stub"
+                exit 1
+            fi
+        else
+            log_error "Failed to remove existing $resolv_conf"
+            exit 1
+        fi
+    else
+        local target
+        target=$(sudo readlink "$resolv_conf")
+        if [[ "$target" == "/run/systemd/resolve/stub-resolv.conf" || "$target" == "/run/systemd/resolve/resolv.conf" ]]; then
+            log_info "$resolv_conf already managed by systemd-resolved"
+        else
+            log_warning "$resolv_conf symlink points to unexpected target: $target"
+        fi
+    fi
 }
 
 # Function to verify deployment
@@ -307,16 +364,43 @@ verify_deployment() {
     done
     
     # Check dotfiles
-    for dotfile in "$DESKTOP_ROOT/dot"/.*; do
-        if [[ -f "$dotfile" ]]; then
-            local filename=$(basename "$dotfile")
-            local target="$HOME/$filename"
-            if [[ ! -f "$target" ]]; then
-                log_error "Missing dotfile: $filename"
-                ((errors++))
+    if [[ ! -d "$DOT_ROOT" ]]; then
+        log_error "Dotfiles directory not found for verification: $DOT_ROOT"
+        ((errors++))
+    else
+        for dotfile in "$DOT_ROOT"/.*; do
+            if [[ -f "$dotfile" ]]; then
+                local filename=$(basename "$dotfile")
+                local target="$HOME/$filename"
+                if [[ ! -f "$target" ]]; then
+                    log_error "Missing dotfile: $filename"
+                    ((errors++))
+                fi
             fi
+        done
+    fi
+    
+    # Validate systemd-resolved status and configuration
+    if ! sudo systemctl is-enabled --quiet systemd-resolved.service; then
+        log_error "systemd-resolved.service is not enabled"
+        ((errors++))
+    elif ! systemctl is-active --quiet systemd-resolved.service; then
+        log_error "systemd-resolved.service is not active"
+        ((errors++))
+    fi
+    
+    local resolv_conf="/etc/resolv.conf"
+    if ! sudo test -L "$resolv_conf"; then
+        log_error "$resolv_conf is not a symlink (expected systemd-resolved stub)"
+        ((errors++))
+    else
+        local target
+        target=$(sudo readlink "$resolv_conf")
+        if [[ "$target" != "/run/systemd/resolve/stub-resolv.conf" && "$target" != "/run/systemd/resolve/resolv.conf" ]]; then
+            log_error "$resolv_conf symlink target unexpected: $target"
+            ((errors++))
         fi
-    done
+    fi
     
     if [[ $errors -eq 0 ]]; then
         log_success "Deployment verification passed - all files deployed correctly"
@@ -347,8 +431,9 @@ This script:
 3. Deploys Hyprland, Kitty, and Waybar configurations
 4. Deploys all scripts to ~/bin/
 5. Deploys all dotfiles to ~/
-6. Creates .backup files for any existing configurations
-7. Verifies all files were deployed correctly
+6. Enables systemd-resolved.service and links /etc/resolv.conf
+7. Creates .backup files for any existing configurations
+8. Verifies all files were deployed correctly
 
 Log file: $LOG_FILE
 EOF
@@ -428,6 +513,8 @@ main() {
         fi
         
         deploy_dotfiles
+        
+        ensure_systemd_resolved
         
         verify_deployment
     fi

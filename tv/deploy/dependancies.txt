@@ -1,1 +1,21 @@
-hyprland hypridle hyprlock hyprsunset kitty jq tmux chafa timg viu poppler-utils mupdf-tools btop lm_sensors pamixer blueberry nautilus chromium zsh
+zsh
+micro
+fastfetch
+zoxide
+atuin
+oh-my-posh
+nnn
+fzf
+eza
+bat
+bc
+tree
+net-tools
+usbutils
+pciutils
+ripgrep
+git
+yay
+chezmoi
+inetutils
+moar

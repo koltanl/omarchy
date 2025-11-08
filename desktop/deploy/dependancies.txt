@@ -1,1 +1,21 @@
-hyprland hypridle hyprlock hyprsunset kitty waybar jq grim slurp satty wl-clipboard btop lm_sensors pamixer blueberry nautilus chromium zsh
+zsh
+micro
+fastfetch
+zoxide
+atuin
+oh-my-posh
+nnn
+fzf
+eza
+bat
+bc
+tree
+net-tools
+usbutils
+pciutils
+ripgrep
+git
+yay
+chezmoi
+inetutils
+moar

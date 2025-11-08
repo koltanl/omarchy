@@ -1,5 +1,5 @@
 [Unit]
-Description=Network Setup for TV wlan0 Interface
+Description=Template for setting a static IP on boot (legacy TV setup)
 After=network-online.target
 Wants=network-online.target
 
